@@ -1,80 +1,64 @@
+-- Load plugin manager
 require("config.lazy")
 
+-- Enable line numbers
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.fillchars:append({ eob = " " })
 
-
--- Set background to dark and make it transparent
+-- Transparent background
 vim.opt.background = "dark"
 vim.cmd("hi Normal ctermbg=NONE guibg=NONE")
 vim.cmd("hi VertSplit ctermbg=NONE guibg=NONE")
 
--- Fix tab spacing to 4 spaces
+-- Tabs & indentation
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.expandtab = true
 
+-- Syntax + filetype
+vim.cmd("syntax enable")
+vim.cmd("filetype plugin indent on")
 
--- Java LSP loader
+-- Treesitter works with Java too
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "java",
   callback = function()
+    vim.cmd("TSBufEnable highlight")
     require("config.java")
   end,
 })
 
+-- Diagnostic UI
 vim.diagnostic.config({
-  virtual_text = true,   -- Show inline error messages
-  signs = true,          -- Gutter signs (like red >)
-  underline = true,      -- Underline errors
+  virtual_text = true,
+  signs = true,
+  underline = true,
   update_in_insert = false,
   severity_sort = true,
 })
--- Enable full diagnostic display
-vim.diagnostic.config({
-  virtual_text = true,  -- Show messages inline next to code
-  signs = true,         -- Show signs in the gutter
-  underline = true,     -- Underline the problem lines
-  update_in_insert = false,
-  severity_sort = true,
-})
-
--- Optional: keybinding to see the diagnostic message in a popup
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = "Show error message" })
 
-
-
--- Get the center line of the screen
-local center_cursor = function()
+-- Center cursor setup
+local function center_cursor()
   local height = vim.api.nvim_win_get_height(0)
-  local center = math.floor(height / 2)
-  vim.opt.scrolloff = center
+  vim.opt.scrolloff = math.floor(height / 2)
 end
 
--- Set scrolloff to center of screen on startup and on resize
 vim.api.nvim_create_autocmd({ "VimResized", "WinEnter" }, {
   callback = center_cursor,
 })
 
--- Run once on launch
 center_cursor()
 
-
 vim.api.nvim_create_user_command("ToggleCenterPin", function()
-  if vim.opt.scrolloff:get() > 0 then
-    vim.opt.scrolloff = 0
-  else
-    center_cursor()
-  end
+  vim.opt.scrolloff = vim.opt.scrolloff:get() > 0 and 0 or math.floor(vim.api.nvim_win_get_height(0) / 2)
 end, {})
 
-
--- Compile & run current file in terminal below
+-- Run & compile shortcut
 vim.keymap.set("n", "<leader>rr", function()
   local file = vim.fn.expand("%:p")
   local ext = vim.fn.expand("%:e")
-
   local cmd = ""
 
   if ext == "c" then
