@@ -20,6 +20,22 @@ require("lazy").setup({
       vim.cmd("colorscheme tokyonight-night")
     end,
   },
+    {
+  "williamboman/mason.nvim",
+  config = function()
+    require("mason").setup()
+  end,
+},
+{
+  "williamboman/mason-lspconfig.nvim",
+  dependencies = { "williamboman/mason.nvim" },
+  config = function()
+    require("mason-lspconfig").setup({
+      ensure_installed = { "gopls", "lua_ls", "jdtls" },
+    })
+  end,
+},
+
 
   -- Treesitter
   {
@@ -35,6 +51,27 @@ require("lazy").setup({
       })
     end,
   },
+
+    {
+  "zbirenbaum/copilot.lua",
+  cmd = "Copilot",
+  event = "InsertEnter",
+  config = function()
+    require("copilot").setup({
+      suggestion = {
+        enabled = true,
+        auto_trigger = true,
+        keymap = {
+          accept = "<C-l>",
+          next = "<C-j>",
+          prev = "<C-k>",
+          dismiss = "<C-h>",
+        },
+      },
+      panel = { enabled = false },
+    })
+  end,
+},
 
   -- LSP
   { "neovim/nvim-lspconfig" },
